@@ -8,7 +8,8 @@ import Action from './components/Action.vue';
     <nav></nav>
     <section class="main-section">
       <h3>BRAD</h3>
-      <img src="/bunny.gif" class="pet-gif" alt="Bunny png">
+      <img src="/bunny.gif" class="pet-gif"
+        alt="Bunny png, Source: https://www.pixilart.com/art/bunny-gif-3e7007fff017d50">
     </section>
     <br>
     <section class="actions">
