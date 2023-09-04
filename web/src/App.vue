@@ -46,21 +46,43 @@ let petName = ref<string>("")
 let newPet = ref<boolean>(true)
 const actions = ref<string[]>(["PET", "FEED", "HUG", "BATH"])
 
-function createPet() {
+async function createPet() {
   if (petName.value.trim() === "") {
     petName.value = "Bobby"
   }
 
-  localStorage.setItem("pet", petName.value)
-  newPet.value = false
+
+  try {
+    let res = await fetch(`${import.meta.env.VITE_API_URL}/api/createPet`, {
+      method: "POST",
+      body: JSON.stringify({
+        petName: petName.value
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    })
+    let resp = await res.json()
+    console.log(resp)
+    // localStorage.setItem("pet", petName.value)
+    // newPet.value = false
+    // console.log(resp)
+  } catch {
+
+
+  }
 }
 
-onMounted(() => {
+onMounted(async () => {
   let pet = localStorage.getItem("pet")
+  if (!pet?.trim()) {
 
-  if (pet?.trim()) {
-    newPet.value = false
-    petName.value = pet
+    return
   }
+
+  newPet.value = false
+  petName.value = pet
+
+
 })
 </script>
