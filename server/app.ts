@@ -123,9 +123,9 @@ const Simulation = async () => {
 
     // How to interview
 
-    // console.log(
-    //     await interviewAgent(tommie, "Tell me about how your day has been going")
-    // );
+    console.log(
+        await interviewAgent(tommie, "Tell me about how your day has been going, and at the end, give me a scale of how hungry, happy, and sad you are on a scale of 1 - 10 ( 10 being most ), give it in the format of an array of objects")
+    );
     // /*
 
 
