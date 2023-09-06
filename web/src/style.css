@@ -13,6 +13,8 @@ main {
   font-family: 'pixel';
 }
 
+
+
 .main-section {
   display: flex;
   align-items: center;
@@ -45,6 +47,7 @@ main {
 }
 
 .pet-name-field {
+  font-size: 14.5px;
   text-align: center;
   color: rgb(36, 36, 36);
 }
