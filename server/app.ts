@@ -146,4 +146,4 @@ const runSimulation = async () => {
     }
 };
 
-await runSimulation();
+// await runSimulation();
