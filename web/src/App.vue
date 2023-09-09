@@ -15,6 +15,8 @@
           class="action-input pet-name-field">
         <Button @click="createPet">CREATE</Button>
       </span>
+      <h5 v-if="error" style="text-align: center; font-weight: 200;color: red">There was an error creating
+        your pet</h5>
     </section>
     <section v-else>
       <section class="actions">
@@ -39,18 +41,28 @@
 <script lang="ts" setup>
 import Action from './components/Action.vue';
 import Button from "./components/Button.vue"
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const petIsHappy = ref<boolean>(false)
 let petName = ref<string>("")
 let newPet = ref<boolean>(true)
+let error = ref<boolean>(false)
 const actions = ref<string[]>(["PET", "FEED", "HUG", "BATH"])
+
+watch(newPet, () => {
+  fetch(`${import.meta.env.VITE_API_URL}/api/startConversation`, {
+    method: "POST",
+    body: JSON.stringify({ id: localStorage.getItem("id") }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+})
 
 async function createPet() {
   if (petName.value.trim() === "") {
     petName.value = "Bobby"
   }
-
 
   try {
     let res = await fetch(`${import.meta.env.VITE_API_URL}/api/createPet`, {
@@ -63,26 +75,24 @@ async function createPet() {
       }
     })
     let resp = await res.json()
-    console.log(resp)
-    // localStorage.setItem("pet", petName.value)
-    // newPet.value = false
-    // console.log(resp)
+
+    if (resp.id) {
+      localStorage.setItem("id", resp.id)
+      localStorage.setItem("pet", petName.value)
+      newPet.value = false
+    }
+
   } catch {
-
-
+    error.value = true
   }
 }
 
 onMounted(async () => {
   let pet = localStorage.getItem("pet")
   if (!pet?.trim()) {
-
     return
   }
-
   newPet.value = false
   petName.value = pet
-
-
 })
 </script>

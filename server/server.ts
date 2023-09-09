@@ -1,4 +1,5 @@
 import { Collection } from "mongodb";
+import { generatePet } from "./modules/generatePet";
 
 const express = require('express');
 const cors = require("cors")
@@ -26,11 +27,15 @@ async function startServer() {
 
         app.post("/api/createPet", async (req, res) => {
             try {
+                if (!req.body.petName) {
+                    req.body.petName = "Bobby"
+                }
 
+                let sanitizedPetName = req.body.petName.trim()
                 let collection: Collection = db.collection("pets")
 
                 let doc = await collection.insertOne({
-                    name: req.body.petName,
+                    name: sanitizedPetName,
                     created: Date.now()
                 })
 
@@ -40,6 +45,23 @@ async function startServer() {
                 res.status(400).send({ message: "Error creating pet" })
             }
         })
+
+        app.post("/api/startConversation", async (req, res) => {
+            const id = req.body.id
+            if (!req.body.id) {
+                res.status(400).send({ message: "Invalid request" })
+            }
+            let doc = await db.collection("history")
+
+            const history = await doc.findOne({ id: req.body.id })
+
+            console.log("History", history)
+
+            if (history === null) {
+                generatePet(id)
+            }
+        })
+
         // Start the server
         app.listen(port, () => {
             console.log(`Server is running on port ${port}`);
