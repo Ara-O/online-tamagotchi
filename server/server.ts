@@ -1,5 +1,5 @@
-import { Collection } from "mongodb";
-import { generatePet } from "./modules/generatePet";
+import { Collection, ObjectId } from "mongodb";
+import { generatePetPersonality } from "./modules/generatePet";
 
 const express = require('express');
 const cors = require("cors")
@@ -36,6 +36,7 @@ async function startServer() {
 
                 let doc = await collection.insertOne({
                     name: sanitizedPetName,
+                    age: 0,
                     created: Date.now()
                 })
 
@@ -50,15 +51,23 @@ async function startServer() {
             const id = req.body.id
             if (!req.body.id) {
                 res.status(400).send({ message: "Invalid request" })
+                return
             }
-            let doc = await db.collection("history")
 
-            const history = await doc.findOne({ id: req.body.id })
+            let doc = await db.collection("pets")
+            let pet = await doc.findOne({ "_id": new ObjectId(id) })
 
-            console.log("History", history)
+            if (pet === null) {
+                res.status(400).send({ message: "Pet not found" })
+                return
+            }
+
+            doc = await db.collection("history")
+            const history = await doc.findOne({ "_id": new ObjectId(id) })
+
 
             if (history === null) {
-                generatePet(id)
+                await generatePetPersonality(id, pet?.name, pet?.age)
             }
         })
 
