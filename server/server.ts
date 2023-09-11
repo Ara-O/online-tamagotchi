@@ -49,6 +49,7 @@ async function startServer() {
 
         app.post("/api/startConversation", async (req, res) => {
             const id = req.body.id
+
             if (!req.body.id) {
                 res.status(400).send({ message: "Invalid request" })
                 return
@@ -62,12 +63,15 @@ async function startServer() {
                 return
             }
 
+            //Check if the pet already has a personality
             doc = await db.collection("history")
-            const history = await doc.findOne({ "_id": new ObjectId(id) })
+            const history = await doc.findOne({ "id": id })
 
 
             if (history === null) {
                 await generatePetPersonality(id, pet?.name, pet?.age)
+            } else {
+                console.log("Pet already has personality")
             }
         })
 

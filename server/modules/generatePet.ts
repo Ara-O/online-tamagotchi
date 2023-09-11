@@ -8,12 +8,14 @@ import {
     GenerativeAgent,
 } from "langchain/experimental/generative_agents";
 import 'dotenv/config'
+import { getDatabaseConnection } from "../database";
 
 
 export async function generatePetPersonality(id: string, name: string, age: number) {
     const userName = "USER";
 
     const API_KEY = process.env.OPENAI_API_KEY
+
     const llm = new OpenAI({
         temperature: 0.9,
         openAIApiKey: API_KEY,
@@ -23,32 +25,42 @@ export async function generatePetPersonality(id: string, name: string, age: numb
     //Generate trait and store in database
 
     const Simulation = async () => {
-        const createNewMemoryRetriever = async () => {
-            const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings());
-            const retriever = new TimeWeightedVectorStoreRetriever({
-                vectorStore,
-                otherScoreKeys: ["importance"],
-                k: 15,
+        try {
+            const createNewMemoryRetriever = async () => {
+                const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings());
+                const retriever = new TimeWeightedVectorStoreRetriever({
+                    vectorStore,
+                    otherScoreKeys: ["importance"],
+                    k: 15,
+                });
+                return retriever;
+            };
+
+            const petsMemory: GenerativeAgentMemory = new GenerativeAgentMemory(
+                llm,
+                await createNewMemoryRetriever(),
+                { reflectionThreshold: 8 }
+            );
+
+            const pet: GenerativeAgent = new GenerativeAgent(llm, petsMemory, {
+                name,
+                age,
+                traits: "you're a tamagotchi pet, you sometimes feel hungry, you sometimes feel the need to bath, yous feel human emotions",
+                status: "a human's pet",
             });
-            return retriever;
-        };
 
-        const petsMemory: GenerativeAgentMemory = new GenerativeAgentMemory(
-            llm,
-            await createNewMemoryRetriever(),
-            { reflectionThreshold: 8 }
-        );
+            let db = getDatabaseConnection()
+            let coll = await db.collection("history")
+            let petBehavior = await pet.getSummary()
+            coll.insertOne({ id, history: [petBehavior] })
 
-        const pet: GenerativeAgent = new GenerativeAgent(llm, petsMemory, {
-            name,
-            age,
-            traits: "tamagotchi pet, feels hungry, feels the need to bath, feels human emotions",
-            status: "a human's pet",
-        });
+            console.log("Pets's behavior:\n", petBehavior)
 
-        console.log("Tommie's first summary:\n", await pet.getSummary());
+
+        } catch (err) {
+            console.error(err)
+        }
     }
-
 
     const runSimulation = async () => {
         try {
@@ -61,8 +73,8 @@ export async function generatePetPersonality(id: string, name: string, age: numb
 
     await runSimulation();
 
-}
 
+}
 // const Simulation = async () => {
 
 
