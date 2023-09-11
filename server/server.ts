@@ -1,6 +1,8 @@
 import { Collection, ObjectId } from "mongodb";
 import { generatePetPersonality } from "./modules/generatePet";
 import { visitPet } from "./modules/visitPet";
+import { requiresPetAuth } from "./auth/auth";
+import parseAction from "./modules/parseAction";
 
 const express = require('express');
 const cors = require("cors")
@@ -48,40 +50,40 @@ async function startServer() {
             }
         })
 
-        app.post("/api/startConversation", async (req, res) => {
+        app.post("/api/startConversation", requiresPetAuth, async (req, res) => {
             try {
-                const id = req.body.id
-
-                if (!req.body.id) {
-                    res.status(400).send({ message: "Invalid request" })
-                    return
-                }
-
-                let doc = await db.collection("pets")
-                let pet = await doc.findOne({ "_id": new ObjectId(id) })
-
-                if (pet === null) {
-                    res.status(404).send({ message: "Pet not found" })
-                    return
-                }
+                const { id, pet } = req
 
                 //Check if the pet already has a personality
-                doc = await db.collection("history")
+                let doc = await db.collection("history")
                 const history = await doc.findOne({ "id": id })
-
 
                 if (history === null) {
                     await generatePetPersonality(id, pet?.name, pet?.age)
                     return res.status(200).send({ message: `${pet.name} is happy to see you!` })
                 } else {
-                    await visitPet(id, pet?.name, pet?.age)
-                    console.log("Pet already has personality")
-                    return res.status(200).send({ message: `${pet.name} is happy to see you again!` })
+                    let response = await visitPet(id, pet?.name, pet?.age)
+                    console.log("You are visiting pet - ", response)
+                    return res.status(200).send({ message: response })
                 }
-
             } catch (err) {
-                res.status(500).send({ message: "There was an error starting a conversation" })
+                res.status(500).send({ message: "There was an error", error: err })
             }
+        })
+
+        app.post("/api/performAction", requiresPetAuth, async (req, res) => {
+            if (!req.body.action || req.body?.action.trim() === "") {
+                res.status(400).send({ message: "There was an error performing this action" })
+            }
+
+            const { id, pet } = req
+
+            let action = parseAction(req.body.action)
+
+            console.log("ACTION:", action)
+            let response = await visitPet(id, pet?.name, pet?.age, action)
+            console.log("You are visiting pet - ", response)
+            return res.status(200).send({ message: response })
         })
 
         // Start the server

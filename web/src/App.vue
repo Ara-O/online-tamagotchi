@@ -28,7 +28,7 @@
       </section>
       <section class="reaction-section">
         <h3>REACTION</h3>
-        <h5 class="reaction-text">{{ petReaction }}</h5>
+        <h5 class="reaction-text">{{ petReaction || `${petName} is waking up...` }}</h5>
       </section>
     </section>
   </main>
@@ -102,14 +102,28 @@ async function startConversation() {
 }
 
 async function performAction(action: string) {
-  console.log(action)
+  fetch(`${import.meta.env.VITE_API_URL}/api/performAction`, {
+    method: "POST",
+    body: JSON.stringify({ id: localStorage.getItem("id"), action }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  }).then((res) => res.json()).then((res: any) => {
+    console.log("action res: ", res)
+  }).catch((err) => {
+    alert(err)
+  })
 }
 
 onMounted(async () => {
   let pet = localStorage.getItem("pet")
-  if (!pet?.trim()) {
+  let id = localStorage.getItem("id")
+
+  //If pet does not exist, stay on normalpage
+  if (!pet?.trim() || !id?.trim()) {
     return
   }
+
   newPet.value = false
   petName.value = pet
   startConversation()
