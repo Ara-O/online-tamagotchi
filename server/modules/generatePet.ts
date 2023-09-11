@@ -23,7 +23,6 @@ export async function generatePetPersonality(id: string, name: string, age: numb
     });
 
     //Generate trait and store in database
-
     const Simulation = async () => {
         try {
             const createNewMemoryRetriever = async () => {
@@ -45,17 +44,15 @@ export async function generatePetPersonality(id: string, name: string, age: numb
             const pet: GenerativeAgent = new GenerativeAgent(llm, petsMemory, {
                 name,
                 age,
-                traits: "you're a tamagotchi pet, you sometimes feel hungry, you sometimes feel the need to bath, yous feel human emotions",
-                status: "a human's pet",
+                traits: "You're a tamagotchi pet, you sometimes feel hungry, you sometimes feel the need to bath, you feel human emotions",
+                status: "You are deciding your own behavior",
             });
 
             let db = getDatabaseConnection()
-            let coll = await db.collection("history")
+            let collection = await db.collection("history")
             let petBehavior = await pet.getSummary()
-            coll.insertOne({ id, history: [petBehavior] })
 
-            console.log("Pets's behavior:\n", petBehavior)
-
+            collection.insertOne({ id, history: [petBehavior] })
 
         } catch (err) {
             console.error(err)

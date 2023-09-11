@@ -20,7 +20,7 @@
     </section>
     <section v-else>
       <section class="actions">
-        <Action :tabindex="i" v-for="(action, i) in actions">{{ action }}</Action>
+        <Action :tabindex="i" v-for="(action, i) in actions" @click="performAction(action)">{{ action }}</Action>
       </section>
       <section class="action-input-section">
         <input type="text" name="input-field" class="action-input">
@@ -28,10 +28,7 @@
       </section>
       <section class="reaction-section">
         <h3>REACTION</h3>
-        <h5 class="reaction-text">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vitae tempora dolore ad
-          corrupti, est qui unde
-          voluptatibus velit. Dolorum totam blanditiis delectus est, corporis adipisci dolorem voluptates eligendi! Dolore
-          corporis a consectetur labore fugit consequatur vel quisquam nulla amet. Magnam.</h5>
+        <h5 class="reaction-text">{{ petReaction }}</h5>
       </section>
     </section>
   </main>
@@ -41,23 +38,14 @@
 <script lang="ts" setup>
 import Action from './components/Action.vue';
 import Button from "./components/Button.vue"
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const petIsHappy = ref<boolean>(false)
 let petName = ref<string>("")
 let newPet = ref<boolean>(true)
 let error = ref<boolean>(false)
+let petReaction = ref<string>("")
 const actions = ref<string[]>(["PET", "FEED", "HUG", "BATH"])
-
-watch(newPet, () => {
-  fetch(`${import.meta.env.VITE_API_URL}/api/startConversation`, {
-    method: "POST",
-    body: JSON.stringify({ id: localStorage.getItem("id") }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  })
-})
 
 async function createPet() {
   if (petName.value.trim() === "") {
@@ -80,11 +68,41 @@ async function createPet() {
       localStorage.setItem("id", resp.id)
       localStorage.setItem("pet", petName.value)
       newPet.value = false
+      startConversation()
     }
 
   } catch {
     error.value = true
   }
+}
+
+async function startConversation() {
+  fetch(`${import.meta.env.VITE_API_URL}/api/startConversation`, {
+    method: "POST",
+    body: JSON.stringify({ id: localStorage.getItem("id") }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  }).then((res) => {
+    console.log("Error: ", res)
+    if (!res.ok && res.status == 404) {
+      localStorage.setItem("id", "")
+      localStorage.setItem("pet", "")
+      newPet.value = true
+      throw "Your pet was lost to the void :0"
+    }
+
+    return res.json()
+  }).then((res: any) => {
+    console.log("reaction", res)
+    petReaction.value = res.message || `Something is wrong with ${petName.value} 😟`
+  }).catch((err) => {
+    alert(err)
+  })
+}
+
+async function performAction(action: string) {
+  console.log(action)
 }
 
 onMounted(async () => {
@@ -94,5 +112,6 @@ onMounted(async () => {
   }
   newPet.value = false
   petName.value = pet
+  startConversation()
 })
 </script>
