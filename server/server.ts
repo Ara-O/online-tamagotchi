@@ -76,13 +76,20 @@ async function startServer() {
                 res.status(400).send({ message: "There was an error performing this action" })
             }
 
+            //Gets the id and pet data from the auth
             const { id, pet } = req
 
-            let action = parseAction(req.body.action)
+            let action;
+
+            if (req.body.action === "ACT" && req.body.actionText) {
+                action = parseAction(req.body.action, req.body.actionText)
+            } else {
+                action = parseAction(req.body.action)
+            }
 
             console.log("ACTION:", action)
-            let response = await visitPet(id, pet?.name, pet?.age, action)
-            console.log("You are visiting pet - ", response)
+            let response = await visitPet(id, pet?.name, pet?.age, action, req.body.actionText)
+            console.log(response)
             return res.status(200).send({ message: response })
         })
 

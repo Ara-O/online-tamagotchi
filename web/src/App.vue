@@ -23,8 +23,9 @@
         <Action :tabindex="i" v-for="(action, i) in actions" @click="performAction(action)">{{ action }}</Action>
       </section>
       <section class="action-input-section">
-        <input type="text" name="input-field" class="action-input">
-        <Action style="border: solid 1px hotpink" tabindex="5">ACT</Action>
+        <input type="text" name="input-field" class="action-input" v-model="actionText"
+          :placeholder="`Example: I give ${petName?.toLowerCase() || 'Pet name'} a cake`">
+        <Action style="border: solid 1px hotpink" tabindex="5" @click="() => performAction('ACT')">ACT</Action>
       </section>
       <section class="reaction-section">
         <h3>REACTION</h3>
@@ -40,10 +41,12 @@ import Action from './components/Action.vue';
 import Button from "./components/Button.vue"
 import { onMounted, ref } from 'vue';
 
+
 const petIsHappy = ref<boolean>(false)
 let petName = ref<string>("")
 let newPet = ref<boolean>(true)
 let error = ref<boolean>(false)
+let actionText = ref<string>("")
 let petReaction = ref<string>("")
 const actions = ref<string[]>(["PET", "FEED", "HUG", "BATH"])
 
@@ -104,12 +107,15 @@ async function startConversation() {
 async function performAction(action: string) {
   fetch(`${import.meta.env.VITE_API_URL}/api/performAction`, {
     method: "POST",
-    body: JSON.stringify({ id: localStorage.getItem("id"), action }),
+    body: JSON.stringify({ id: localStorage.getItem("id"), action, actionText: actionText.value }),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
     }
   }).then((res) => res.json()).then((res: any) => {
     console.log("action res: ", res)
+    if (res.message) {
+      petReaction.value = res.message
+    }
   }).catch((err) => {
     alert(err)
   })

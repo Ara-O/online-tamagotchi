@@ -20,7 +20,7 @@ const interviewAgent = async (
     return response[1];
 };
 
-export async function visitPet(id: string, name: string, age: number, action?: string) {
+export async function visitPet(id: string, name: string, age: number, action?: string, actionText?: string) {
 
     try {
         const connection = getDatabaseConnection()
@@ -76,6 +76,7 @@ export async function visitPet(id: string, name: string, age: number, action?: s
                 //     console.log("Adding memory...")
                 // }
 
+                //When UB is waking up
                 if (!action) {
                     let petResponse = await pet.generateReaction("Your owner is visiting you, your owner asks of you to address them in first person, for example, you should react like 'I am happy to see you. Do not refer to your owner as 'owner', refer to them as you")
                     return petResponse
