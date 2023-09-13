@@ -93,6 +93,10 @@ async function startServer() {
             return res.status(200).send({ message: response })
         })
 
+        app.get("/health", (req, res) => {
+            return res.send("Helthi")
+        })
+
         // Start the server
         app.listen(port, () => {
             console.log(`Server is running on port ${port}`);
