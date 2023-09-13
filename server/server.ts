@@ -64,7 +64,7 @@ async function startServer() {
                 } else {
                     let response = await visitPet(id, pet?.name, pet?.age)
                     console.log("You are visiting pet - ", response)
-                    return res.status(200).send({ message: response })
+                    return res.status(200).send(response)
                 }
             } catch (err) {
                 res.status(500).send({ message: "There was an error", error: err })
@@ -90,7 +90,7 @@ async function startServer() {
             console.log("ACTION:", action)
             let response = await visitPet(id, pet?.name, pet?.age, action, req.body.actionText)
             console.log(response)
-            return res.status(200).send({ message: response })
+            return res.status(200).send(response)
         })
 
         app.get("/health", (req, res) => {

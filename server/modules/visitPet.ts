@@ -10,17 +10,18 @@ import {
 } from "langchain/experimental/generative_agents";
 import 'dotenv/config'
 import { getDatabaseConnection } from "../database";
+import { ActionResponseType } from "../types/types";
 
 const interviewAgent = async (
     agent: GenerativeAgent,
     message: string
 ): Promise<string> => {
-    const newMessage = `Your owner says ${message}`;
+    const newMessage = `Your owner does this: ${message}`;
     const response = await agent.generateDialogueResponse(newMessage);
     return response[1];
 };
 
-export async function visitPet(id: string, name: string, age: number, action?: string, actionText?: string) {
+export async function visitPet(id: string, name: string, age: number, action?: string, actionText?: string): Promise<ActionResponseType> {
 
     try {
         const connection = getDatabaseConnection()
@@ -46,7 +47,7 @@ export async function visitPet(id: string, name: string, age: number, action?: s
         });
 
         //Generate trait and store in database
-        const Simulation = async () => {
+        const Simulation = async (): Promise<ActionResponseType> => {
             try {
                 const createNewMemoryRetriever = async () => {
                     const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings());
@@ -78,12 +79,20 @@ export async function visitPet(id: string, name: string, age: number, action?: s
 
                 //When UB is waking up
                 if (!action) {
-                    let petResponse = await pet.generateReaction("Your owner is visiting you, your owner asks of you to address them in first person, for example, you should react like 'I am happy to see you. Do not refer to your owner as 'owner', refer to them as you")
-                    return petResponse
-                } else {
-                    let petResponse = await pet.generateReaction(action)
-                    return petResponse
+                    action = "Your owner just visited you"
                 }
+
+                //When any other action is performed
+                let interviewRes = await interviewAgent(pet, action)
+                let petResponse = await pet.generateReaction(action)
+
+                const response: ActionResponseType = {
+                    actionPrompt: action,
+                    petThought: interviewRes,
+                    petResponse: petResponse
+                }
+
+                return response
 
             } catch (err) {
                 console.error(err)
@@ -91,10 +100,9 @@ export async function visitPet(id: string, name: string, age: number, action?: s
             }
         }
 
+        let petResponse: ActionResponseType = await Simulation();
 
-        let petResponse = await Simulation();
-
-        return petResponse[1]
+        return petResponse as ActionResponseType
     } catch (err) {
         throw new Error(err)
     }

@@ -20,7 +20,8 @@
     </section>
     <section v-else>
       <section class="actions">
-        <Action :tabindex="i" v-for="(action, i) in actions" @click="performAction(action)">{{ action }}</Action>
+        <Action :tabindex="i" v-for="(action, i) in actions" @click="performAction(action as ActionType)">{{ action }}
+        </Action>
       </section>
       <section class="action-input-section">
         <input type="text" name="input-field" class="action-input" v-model="actionText"
@@ -40,7 +41,7 @@
 import Action from './components/Action.vue';
 import Button from "./components/Button.vue"
 import { onMounted, ref } from 'vue';
-
+import { ActionResponseType } from "../../server/types/types.ts"
 
 const petIsHappy = ref<boolean>(false)
 let petName = ref<string>("")
@@ -79,6 +80,8 @@ async function createPet() {
   }
 }
 
+type ActionType = "PET" | "HUG" | "FEED" | "BATH" | "ACT"
+
 async function startConversation() {
   fetch(`${import.meta.env.VITE_API_URL}/api/startConversation`, {
     method: "POST",
@@ -87,7 +90,6 @@ async function startConversation() {
       "Content-type": "application/json; charset=UTF-8"
     }
   }).then((res) => {
-    console.log("Error: ", res)
     if (!res.ok && res.status == 404) {
       localStorage.setItem("id", "")
       localStorage.setItem("pet", "")
@@ -96,15 +98,28 @@ async function startConversation() {
     }
 
     return res.json()
-  }).then((res: any) => {
+  }).then((res: ActionResponseType) => {
     console.log("reaction", res)
-    petReaction.value = res.message || `Something is wrong with ${petName.value} 😟`
+    petReaction.value = res?.petResponse[1] || `Something is wrong with ${petName.value} 😟`
   }).catch((err) => {
     alert(err)
   })
 }
 
-async function performAction(action: string) {
+async function performAction(action: ActionType) {
+  if (action === "FEED") {
+    petReaction.value = `You are feeding ${petName.value}...`
+  }
+  if (action === "HUG") {
+    petReaction.value = `You are hugging ${petName.value}...`
+  }
+  if (action === "BATH") {
+    petReaction.value = `You are bathing ${petName.value}...`
+  }
+  if (action === "PET") {
+    petReaction.value = `You are pettigng ${petName.value}...`
+  }
+
   fetch(`${import.meta.env.VITE_API_URL}/api/performAction`, {
     method: "POST",
     body: JSON.stringify({ id: localStorage.getItem("id"), action, actionText: actionText.value }),
