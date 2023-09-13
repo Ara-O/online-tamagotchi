@@ -1,7 +1,7 @@
 
 <template>
   <main>
-    <PetVisuals :newPet="newPet" :petName="petName" />
+    <PetVisuals :newPet="newPet" :petName="petName" :petThoughts="petThoughts" />
     <section v-if="newPet">
       <span class="new-pet-field">
         <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
@@ -13,13 +13,15 @@
     </section>
     <section v-else>
       <section class="actions">
-        <Action :tabindex="i" v-for="(action, i) in actions" @click="performAction(action as ActionType)">{{ action }}
+        <Action :tabindex="i" v-for="(action, i) in actions" :class="{ disabled: !petIsAwake }"
+          @click="performAction(action as ActionType)">{{ action }}
         </Action>
       </section>
       <section class="action-input-section">
         <input type="text" name="input-field" class="action-input" v-model="actionText"
           :placeholder="`Example: I give ${petName?.toLowerCase() || 'Pet name'} a cake`">
-        <Action style="border: solid 1px hotpink" tabindex="5" @click="() => performAction('ACT')">ACT</Action>
+        <Action style="border: solid 1px hotpink" tabindex="5" :class="{ disabled: !petIsAwake }" @click="() =>
+          performAction('ACT')">ACT</Action>
       </section>
       <section class="reaction-section">
         <h3>REACTION</h3>
@@ -39,10 +41,13 @@ import PetVisuals from './components/PetVisuals.vue';
 
 let petName = ref<string>("")
 let newPet = ref<boolean>(true)
+let petIsAwake = ref<boolean>(false)
 let error = ref<boolean>(false)
 let actionText = ref<string>("")
 let petReaction = ref<string>("")
 const actions = ref<string[]>(["PET", "FEED", "HUG", "BATH"])
+
+let petThoughts = ref<ActionResponseType[]>([])
 
 async function createPet() {
   if (petName.value.trim() === "") {
@@ -92,8 +97,9 @@ async function startConversation() {
 
     return res.json()
   }).then((res: ActionResponseType) => {
-    console.log("reaction", res)
+    petIsAwake.value = true;
     petReaction.value = res?.petResponse[1] || `Something is wrong with ${petName.value} 😟`
+    petThoughts.value.push(res)
   }).catch((err) => {
     alert(err)
   })
@@ -115,7 +121,8 @@ async function performAction(action: ActionType) {
       petReaction.value = `You are petting ${petName.value}...`
       break;
     case "ACT":
-      return petReaction.value = `You are performing the action - ${actionText.value}...`
+      petReaction.value = `You are performing the action - ${actionText.value}...`
+      break
   }
 
   fetch(`${import.meta.env.VITE_API_URL}/api/performAction`, {
@@ -124,11 +131,11 @@ async function performAction(action: ActionType) {
     headers: {
       "Content-type": "application/json; charset=UTF-8"
     }
-  }).then((res) => res.json()).then((res: any) => {
-    console.log("action res: ", res)
-    if (res.message) {
-      petReaction.value = res.message
-    }
+  }).then((res) => res.json()).then((res: ActionResponseType) => {
+
+    petThoughts.value.push(res)
+    petReaction.value = res.petResponse[1]
+
   }).catch((err) => {
     alert(err)
   })

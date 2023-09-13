@@ -8,9 +8,9 @@
   </div>
 </template>
 
-
 <style scoped>
 .action-container {
+  transition: all 500ms ease-in-out;
   cursor: pointer;
   height: 30px;
   width: auto;
