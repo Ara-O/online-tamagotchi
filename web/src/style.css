@@ -3,7 +3,6 @@
   src: url('/pixel-font.ttf');
 }
 
-
 main {
   display: flex;
   height: 100vh;
@@ -13,17 +12,29 @@ main {
   font-family: 'pixel';
 }
 
-
-
-.main-section {
+.top-section {
   display: flex;
   align-items: center;
-  flex-direction: column;
   font-size: 1.2rem;
   justify-content: center;
   position: relative;
   padding: 0px;
+  gap: 30px;
   color: rgb(83, 83, 83);
+  margin-bottom: 40px;
+}
+
+.top-section article:nth-child(1) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-section article:nth-child(2) {
+  border: solid 1.5px #ff9bbc;
+  height: 100%;
+  width: 250px;
 }
 
 .action-input-section {
@@ -57,14 +68,12 @@ main {
 }
 
 .pet-gif {
-  height: 250px;
+  height: 170px;
   pointer-events: none;
 }
 
 .heart-gif {
   height: 50px;
-  position: absolute;
-  top: 40px;
   opacity: 0.9;
 }
 

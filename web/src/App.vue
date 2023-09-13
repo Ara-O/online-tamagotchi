@@ -1,14 +1,7 @@
 
 <template>
   <main>
-    <nav></nav>
-    <section class="main-section">
-      <h3 class="upper">{{ !newPet ? petName : 'ENTER YOUR PET\'S NAME' }}</h3>
-      <img src="/heart.gif" alt="heart-gif" class="heart-gif" v-if="petIsHappy">
-      <img src="/bunny.gif" class="pet-gif"
-        alt="Bunny png, Source: https://www.pixilart.com/art/bunny-gif-3e7007fff017d50">
-    </section>
-    <br>
+    <PetVisuals :newPet="newPet" :petName="petName" />
     <section v-if="newPet">
       <span class="new-pet-field">
         <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
@@ -42,8 +35,8 @@ import Action from './components/Action.vue';
 import Button from "./components/Button.vue"
 import { onMounted, ref } from 'vue';
 import { ActionResponseType } from "../../server/types/types.ts"
+import PetVisuals from './components/PetVisuals.vue';
 
-const petIsHappy = ref<boolean>(false)
 let petName = ref<string>("")
 let newPet = ref<boolean>(true)
 let error = ref<boolean>(false)
@@ -68,7 +61,7 @@ async function createPet() {
     })
     let resp = await res.json()
 
-    if (resp.id) {
+    if (resp?.id) {
       localStorage.setItem("id", resp.id)
       localStorage.setItem("pet", petName.value)
       newPet.value = false
@@ -107,17 +100,22 @@ async function startConversation() {
 }
 
 async function performAction(action: ActionType) {
-  if (action === "FEED") {
-    petReaction.value = `You are feeding ${petName.value}...`
-  }
-  if (action === "HUG") {
-    petReaction.value = `You are hugging ${petName.value}...`
-  }
-  if (action === "BATH") {
-    petReaction.value = `You are bathing ${petName.value}...`
-  }
-  if (action === "PET") {
-    petReaction.value = `You are pettigng ${petName.value}...`
+
+  switch (action) {
+    case "FEED":
+      petReaction.value = `You are feeding ${petName.value}...`;
+      break;
+    case "HUG":
+      petReaction.value = `You are hugging ${petName.value}...`
+      break;
+    case "BATH":
+      petReaction.value = `You are bathing ${petName.value}...`
+      break;
+    case "PET":
+      petReaction.value = `You are petting ${petName.value}...`
+      break;
+    case "ACT":
+      return petReaction.value = `You are performing the action - ${actionText.value}...`
   }
 
   fetch(`${import.meta.env.VITE_API_URL}/api/performAction`, {
@@ -140,7 +138,7 @@ onMounted(async () => {
   let pet = localStorage.getItem("pet")
   let id = localStorage.getItem("id")
 
-  //If pet does not exist, stay on normalpage
+  //If pet does not exist, stay on normal page
   if (!pet?.trim() || !id?.trim()) {
     return
   }
