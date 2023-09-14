@@ -6,7 +6,7 @@
             <img src="/bunny.gif" class="pet-gif"
                 alt="Bunny png, Source: https://www.pixilart.com/art/bunny-gif-3e7007fff017d50">
         </article>
-        <article class="pet-thought-section">
+        <article class="pet-thought-section" v-if="!newPet">
             <h1>{{ petName?.toUpperCase() }}'s THOUGHTS</h1>
             <div class="thoughts-bubble-container" ref="thoughBubbleContainer">
                 <div v-for="(thought, i) in petThoughts.reverse()">

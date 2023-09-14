@@ -134,7 +134,7 @@ async function performAction(action: ActionType) {
   }).then((res) => res.json()).then((res: ActionResponseType) => {
 
     petThoughts.value.push(res)
-    petReaction.value = res.petResponse[1]
+    petReaction.value = res?.petResponse[1] || "Something is wrong with " + petName
 
   }).catch((err) => {
     alert(err)
