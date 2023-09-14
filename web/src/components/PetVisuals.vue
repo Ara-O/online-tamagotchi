@@ -40,8 +40,6 @@ const props = defineProps<{
 function formatPetName(name: string) {
     if (name.length > 12) {
         return name.slice(0, 12) + "..."
-    } else {
-        return name
     }
     return name
 }
@@ -51,8 +49,6 @@ function parseThought(thought: string) {
     changedThought = changedThought.replaceAll(`"`, "")
     return changedThought
 }
-
-
 </script>
 
 <style scoped>

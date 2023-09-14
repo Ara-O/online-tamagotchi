@@ -63,7 +63,7 @@ async function startConversation() {
     }
 
     petIsAwake.value = true;
-    petReaction.value = res.data.petResponse[1] || `Something is wrong with ${petName.value} 😟`
+    petReaction.value = res.data?.petResponse[1] || `Something is wrong with ${petName.value} 😟`
     petThoughts.value.unshift(res.data)
   }).catch((err) => {
     alert(err)
