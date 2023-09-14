@@ -1,15 +1,18 @@
 <template>
-    <section class="top-section" :class="{ disabled: !petIsAwake }">
+    <section class="top-section" :class="{ disabled: !petIsAwake && !newPet }">
+        <!-- Bunny area -->
         <article>
-            <h3 class="upper">{{ !newPet ? petName : 'ENTER YOUR PET\'S NAME' }}</h3>
+            <h3 class="upper" :title="petName">{{ !newPet ? formatPetName(petName) : 'ENTER YOUR PET\'S NAME' }}</h3>
             <img src="/heart.gif" alt="heart-gif" class="heart-gif">
             <img src="/bunny.gif" class="pet-gif"
                 alt="Bunny png, Source: https://www.pixilart.com/art/bunny-gif-3e7007fff017d50">
         </article>
+
+        <!-- Bunny's thought area -->
         <article class="pet-thought-section" v-if="!newPet">
             <h1>{{ petName?.toUpperCase() }}'s THOUGHTS</h1>
             <div class="thoughts-bubble-container" ref="thoughBubbleContainer">
-                <div v-for="(thought, i) in petThoughts.reverse()">
+                <div v-for="(thought, i) in petThoughts">
                     <div class="pet-bubble" :class="{ last: i === petThoughts.length - 1 }">
                         <h5>{{ petName }}'s' thought: </h5>
                         <h3>{{ parseThought(thought.petThought) }} </h3>
@@ -34,8 +37,14 @@ const props = defineProps<{
     petIsAwake: boolean
 }>()
 
-
-
+function formatPetName(name: string) {
+    if (name.length > 12) {
+        return name.slice(0, 12) + "..."
+    } else {
+        return name
+    }
+    return name
+}
 
 function parseThought(thought: string) {
     let changedThought = thought.replace(`${props.petName} said`, "")

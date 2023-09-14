@@ -57,15 +57,18 @@ async function startServer() {
                 //Check if the pet already has a personality
                 let doc = await db.collection("history")
                 const history = await doc.findOne({ "id": id })
+                let prompt = history === null ? "Your owner just created you" : "Your owner just visited you"
 
+                //If pet does not have personality, start a c
                 if (history === null) {
                     await generatePetPersonality(id, pet?.name, pet?.age)
-                    return res.status(200).send({ message: `${pet.name} is happy to see you!` })
-                } else {
-                    let response = await visitPet(id, pet?.name, pet?.age)
-                    console.log("You are visiting pet - ", response)
-                    return res.status(200).send(response)
                 }
+
+                let response = await visitPet(id, pet?.name, pet?.age, prompt)
+
+                console.log("PET RESPONSE - ", response, "\n")
+
+                return res.status(200).send(response)
             } catch (err) {
                 res.status(500).send({ message: "There was an error", error: err })
             }
@@ -73,7 +76,7 @@ async function startServer() {
 
         app.post("/api/performAction", requiresPetAuth, async (req, res) => {
             if (!req.body.action || req.body?.action.trim() === "") {
-                res.status(400).send({ message: "There was an error performing this action" })
+                return res.status(400).send({ message: "There was an error performing this action" })
             }
 
             try {
@@ -82,6 +85,7 @@ async function startServer() {
 
                 let action;
 
+                //Parse action texts, hug, feed etc
                 if (req.body.action === "ACT" && req.body.actionText) {
                     action = parseAction(req.body.action, req.body.actionText)
                 } else {
@@ -89,8 +93,11 @@ async function startServer() {
                 }
 
                 console.log("ACTION:", action)
+
                 let response = await visitPet(id, pet?.name, pet?.age, action, req.body.actionText)
-                console.log(response)
+
+                console.log("RESPONSE: ", response, "\n")
+
                 return res.status(200).send(response)
             } catch (err) {
                 console.log('Error')

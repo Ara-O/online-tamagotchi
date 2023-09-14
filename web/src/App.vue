@@ -3,13 +3,7 @@
   <main>
     <PetVisuals :newPet="newPet" :petName="petName" :petThoughts="petThoughts" :petIsAwake="petIsAwake" />
     <section v-if="newPet">
-      <span class="new-pet-field">
-        <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
-          class="action-input pet-name-field">
-        <Button @click="createPet">CREATE</Button>
-      </span>
-      <h5 v-if="error" style="text-align: center; font-weight: 200;color: red">There was an error creating
-        your pet</h5>
+      <CreatePetArea @petCreated="petCreated"></CreatePetArea>
     </section>
     <section v-else>
       <section class="actions">
@@ -34,79 +28,49 @@
 
 <script lang="ts" setup>
 import Action from './components/Action.vue';
-import Button from "./components/Button.vue"
+import axios from "axios"
 import { onMounted, ref } from 'vue';
 import { ActionResponseType } from "../../server/types/types.ts"
 import PetVisuals from './components/PetVisuals.vue';
+import CreatePetArea from './components/CreatePetArea.vue';
 
 let petName = ref<string>("")
 let newPet = ref<boolean>(true)
 let petIsAwake = ref<boolean>(false)
-let error = ref<boolean>(false)
+
 let actionText = ref<string>("")
 let petReaction = ref<string>("")
 const actions = ref<string[]>(["PET", "FEED", "HUG", "BATH"])
 
 let petThoughts = ref<ActionResponseType[]>([])
 
-async function createPet() {
-  if (petName.value.trim() === "") {
-    petName.value = "Bobby"
-  }
-
-  try {
-    let res = await fetch(`${import.meta.env.VITE_API_URL}/api/createPet`, {
-      method: "POST",
-      body: JSON.stringify({
-        petName: petName.value
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
-      }
-    })
-    let resp = await res.json()
-
-    if (resp?.id) {
-      localStorage.setItem("id", resp.id)
-      localStorage.setItem("pet", petName.value)
-      newPet.value = false
-      startConversation()
-    }
-
-  } catch {
-    error.value = true
-  }
-}
-
 type ActionType = "PET" | "HUG" | "FEED" | "BATH" | "ACT"
 
+function petCreated(name: string) {
+  newPet.value = false
+  petName.value = name
+  startConversation()
+}
+
+//When the pet is first created, or on re-visit
 async function startConversation() {
-  fetch(`${import.meta.env.VITE_API_URL}/api/startConversation`, {
-    method: "POST",
-    body: JSON.stringify({ id: localStorage.getItem("id") }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  }).then((res) => {
-    if (!res.ok && res.status == 404) {
+  axios.post(`${import.meta.env.VITE_API_URL}/api/startConversation`, { id: localStorage.getItem("id") }).then((res) => {
+    if (res.status == 404) {
       localStorage.setItem("id", "")
       localStorage.setItem("pet", "")
       newPet.value = true
       throw "Your pet was lost to the void :0"
     }
 
-    return res.json()
-  }).then((res: ActionResponseType) => {
     petIsAwake.value = true;
-    petReaction.value = res?.petResponse[1] || `Something is wrong with ${petName.value} 😟`
-    petThoughts.value.push(res)
+    petReaction.value = res.data.petResponse[1] || `Something is wrong with ${petName.value} 😟`
+    petThoughts.value.unshift(res.data)
   }).catch((err) => {
     alert(err)
   })
 }
 
 async function performAction(action: ActionType) {
-
   switch (action) {
     case "FEED":
       petReaction.value = `You are feeding ${petName.value}...`;
@@ -125,19 +89,12 @@ async function performAction(action: ActionType) {
       break
   }
 
-  fetch(`${import.meta.env.VITE_API_URL}/api/performAction`, {
-    method: "POST",
-    body: JSON.stringify({ id: localStorage.getItem("id"), action, actionText: actionText.value }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  }).then((res) => res.json()).then((res: ActionResponseType) => {
-
-    petThoughts.value.push(res)
-    petReaction.value = res?.petResponse[1] || "Something is wrong with " + petName
-
+  axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, { id: localStorage.getItem("id"), action, actionText: actionText.value }).then((res) => {
+    petThoughts.value.unshift(res.data)
+    petReaction.value = res.data?.petResponse[1] || "Something is wrong with " + petName.value
   }).catch((err) => {
-    alert(err)
+    alert(err?.response?.data?.message || "There was an error interacting with  " + petName.value + ", please try again later :)")
+    petReaction.value = `${petName.value} stares in silence`
   })
 }
 
