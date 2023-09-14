@@ -83,13 +83,19 @@ export async function visitPet(id: string, name: string, age: number, action?: s
                 }
 
                 //When any other action is performed
-                let interviewRes = await interviewAgent(pet, action)
-                let petResponse = await pet.generateReaction(action)
+                // let interviewRes = await interviewAgent(pet, action)
+                // let petResponse = await pet.generateReaction(action)
+
+                // const response: ActionResponseType = {
+                //     actionPrompt: action,
+                //     petThought: interviewRes,
+                //     petResponse: petResponse
+                // }
 
                 const response: ActionResponseType = {
                     actionPrompt: action,
-                    petThought: interviewRes,
-                    petResponse: petResponse
+                    petThought: "This is a test",
+                    petResponse: [false, "test"]
                 }
 
                 return response
