@@ -76,21 +76,26 @@ async function startServer() {
                 res.status(400).send({ message: "There was an error performing this action" })
             }
 
-            //Gets the id and pet data from the auth
-            const { id, pet } = req
+            try {
+                //Gets the id and pet data from the auth
+                const { id, pet } = req
 
-            let action;
+                let action;
 
-            if (req.body.action === "ACT" && req.body.actionText) {
-                action = parseAction(req.body.action, req.body.actionText)
-            } else {
-                action = parseAction(req.body.action)
+                if (req.body.action === "ACT" && req.body.actionText) {
+                    action = parseAction(req.body.action, req.body.actionText)
+                } else {
+                    action = parseAction(req.body.action)
+                }
+
+                console.log("ACTION:", action)
+                let response = await visitPet(id, pet?.name, pet?.age, action, req.body.actionText)
+                console.log(response)
+                return res.status(200).send(response)
+            } catch (err) {
+                console.log('Error')
+                return res.status(404).send(err)
             }
-
-            console.log("ACTION:", action)
-            let response = await visitPet(id, pet?.name, pet?.age, action, req.body.actionText)
-            console.log(response)
-            return res.status(200).send(response)
         })
 
         app.get("/health", (req, res) => {

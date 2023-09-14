@@ -1,5 +1,5 @@
 <template>
-    <section class="top-section">
+    <section class="top-section" :class="{ disabled: !petIsAwake }">
         <article>
             <h3 class="upper">{{ !newPet ? petName : 'ENTER YOUR PET\'S NAME' }}</h3>
             <img src="/heart.gif" alt="heart-gif" class="heart-gif">
@@ -30,7 +30,8 @@ import { ActionResponseType } from '../../../server/types/types';
 const props = defineProps<{
     newPet: boolean,
     petName: string,
-    petThoughts: ActionResponseType[]
+    petThoughts: ActionResponseType[],
+    petIsAwake: boolean
 }>()
 
 
@@ -55,6 +56,7 @@ function parseThought(thought: string) {
     padding: 0px;
     gap: 30px;
     color: rgb(83, 83, 83);
+    transition: all 500ms ease-in-out;
     margin-bottom: 40px;
 }
 

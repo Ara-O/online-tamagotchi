@@ -1,7 +1,7 @@
 
 <template>
   <main>
-    <PetVisuals :newPet="newPet" :petName="petName" :petThoughts="petThoughts" />
+    <PetVisuals :newPet="newPet" :petName="petName" :petThoughts="petThoughts" :petIsAwake="petIsAwake" />
     <section v-if="newPet">
       <span class="new-pet-field">
         <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
