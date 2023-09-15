@@ -93,7 +93,6 @@ async function performAction(action: ActionType) {
       break
   }
 
-  actionText.value = ""
 
   axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, { id: localStorage.getItem("id"), action, actionText: actionText.value }).then((res) => {
     petThoughts.value.unshift(res.data)
@@ -101,6 +100,9 @@ async function performAction(action: ActionType) {
   }).catch((err) => {
     alert(err?.response?.data?.message || "There was an error interacting with  " + petName.value + ", please try again later :)")
     petReaction.value = `${petName.value} stares in silence`
+  }).finally(() => {
+    actionText.value = ""
+
   })
 }
 
