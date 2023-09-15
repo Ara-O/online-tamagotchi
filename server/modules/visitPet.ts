@@ -16,7 +16,7 @@ const interviewAgent = async (
     agent: GenerativeAgent,
     message: string
 ): Promise<string> => {
-    const newMessage = `Your owner does this: ${message}`;
+    const newMessage = `${message}`;
     const response = await agent.generateDialogueResponse(newMessage);
     return response[1];
 };
@@ -82,21 +82,25 @@ export async function visitPet(id: string, name: string, age: number, action?: s
                     action = "Your owner just visited you"
                 }
 
-                //When any other action is performed
-                // let interviewRes = await interviewAgent(pet, action)
-                // let petResponse = await pet.generateReaction(action)
+                //   When any other action is performed
+                // let interviewRes = interviewAgent(pet, action)
+                // let petResponse = pet.generateReaction(action)
 
-                // const response: ActionResponseType = {
-                //     actionPrompt: action,
-                //     petThought: interviewRes,
-                //     petResponse: petResponse
-                // }
+                let res = await Promise.all([pet.generateReaction(action), interviewAgent(pet, action)])
+                let petResponse = res[0]
+                let interviewRes = res[1]
 
                 const response: ActionResponseType = {
                     actionPrompt: action,
-                    petThought: "This is a test",
-                    petResponse: [false, "test"]
+                    petThought: interviewRes,
+                    petResponse: petResponse
                 }
+
+                // const response: ActionResponseType = {
+                //     actionPrompt: action,
+                //     petThought: "This is a test",
+                //     petResponse: [false, "test"]
+                // }
 
                 return response
 

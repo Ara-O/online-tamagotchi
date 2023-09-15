@@ -11,11 +11,14 @@
           @click="performAction(action as ActionType)">{{ action }}
         </Action>
       </section>
-      <section class="action-input-section">
-        <input type="text" name="input-field" class="action-input" v-model="actionText"
-          :placeholder="`Example: I give ${petName?.toLowerCase() || 'Pet name'} a cake`">
-        <Action style="border: solid 1px hotpink" tabindex="5" :class="{ disabled: !petIsAwake }" @click="() =>
-          performAction('ACT')">ACT</Action>
+      <section>
+        <form @submit.prevent="performAction('ACT')" class="action-input-section">
+          <input type="text" name="input-field" class="action-input" v-model="actionText"
+            :placeholder="`Example: I give ${petName?.toLowerCase() || 'Pet name'} a cake`">
+          <Action style="border: solid 1px hotpink" tabindex="5" :class="{ disabled: !petIsAwake }"
+            @click="performAction('ACT')">ACT
+          </Action>
+        </form>
       </section>
       <section class="reaction-section">
         <h3>REACTION</h3>
@@ -85,9 +88,12 @@ async function performAction(action: ActionType) {
       petReaction.value = `You are petting ${petName.value}...`
       break;
     case "ACT":
+      if (actionText.value.trim() === "") return
       petReaction.value = `You are performing the action - ${actionText.value}...`
       break
   }
+
+  actionText.value = ""
 
   axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, { id: localStorage.getItem("id"), action, actionText: actionText.value }).then((res) => {
     petThoughts.value.unshift(res.data)
