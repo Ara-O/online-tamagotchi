@@ -3,6 +3,7 @@ import { generatePetPersonality } from "./modules/generatePet";
 import { visitPet } from "./modules/visitPet";
 import { requiresPetAuth } from "./auth/auth";
 import parseAction from "./modules/parseAction";
+import { default as createPetRoute } from "./routes/createPet";
 
 const express = require('express');
 const cors = require("cors")
@@ -26,45 +27,28 @@ app.use(helmet())
 async function startServer() {
     try {
         await startDatabase();
+
         const db = getDatabaseConnection()
 
-        app.post("/api/createPet", async (req, res) => {
-            try {
-                if (!req.body.petName) {
-                    req.body.petName = "Bobby"
-                }
-
-                let sanitizedPetName = req.body.petName.trim()
-                let collection: Collection = db.collection("pets")
-
-                let doc = await collection.insertOne({
-                    name: sanitizedPetName,
-                    age: 0,
-                    created: Date.now()
-                })
-
-                res.status(200).send({ message: "Pet successfully created", id: doc.insertedId })
-
-            } catch (err) {
-                res.status(400).send({ message: "Error creating pet" })
-            }
-        })
+        app.post("/api/createPet", createPetRoute)
 
         app.post("/api/startConversation", requiresPetAuth, async (req, res) => {
             try {
                 const { id, pet } = req
+                const { memory } = req.body
 
                 //Check if the pet already has a personality
-                let doc = await db.collection("history")
+                const doc = await db.collection("history")
                 const history = await doc.findOne({ "id": id })
-                let prompt = history === null ? "Your owner just created you" : "Your owner just visited you"
+                const prompt = history === null ? "Your owner just created you" : "Your owner just visited you"
 
                 //If pet does not have personality, start a c
                 if (history === null) {
                     await generatePetPersonality(id, pet?.name, pet?.age)
                 }
 
-                let response = await visitPet(id, pet?.name, pet?.age, prompt)
+                console.log(req.body.memory)
+                let response = await visitPet(id, pet?.name, pet?.age, prompt, memory)
 
                 console.log("PET RESPONSE - ", response, "\n")
 

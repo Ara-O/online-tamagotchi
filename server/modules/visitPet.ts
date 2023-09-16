@@ -21,18 +21,18 @@ const interviewAgent = async (
     return response[1];
 };
 
-export async function visitPet(id: string, name: string, age: number, action?: string, actionText?: string): Promise<ActionResponseType> {
+export async function visitPet(id: string, name: string, age: number, action?: string, actionText?: string, memoryEnabled?: "enabled" | "disabled"): Promise<ActionResponseType> {
 
     try {
         const connection = getDatabaseConnection()
 
         const db: Collection = connection.collection("history")
 
-        await db.updateOne({ id }, {
-            $push: {
-                history: `You were visited by your owner on ${new Date(Date.now()).toLocaleString()}`
-            }
-        })
+        // await db.updateOne({ id }, {
+        //     $push: {
+        //         history: `You were visited by your owner on ${new Date(Date.now()).toLocaleString()}`
+        //     }
+        // })
 
         let history = await db.findOne({ id })
 
@@ -72,19 +72,15 @@ export async function visitPet(id: string, name: string, age: number, action?: s
                     status: "You just got visited by your owner"
                 });
 
-                // for (const memory of history.history) {
-                //     await pet.addMemory(memory, new Date());
-                //     console.log("Adding memory...")
-                // }
-
-                //When UB is waking up
-                if (!action) {
-                    action = "Your owner just visited you"
+                if (memoryEnabled) {
+                    console.log("Memory Enabled: ")
+                    for (const memory of history.history) {
+                        await pet.addMemory(memory, new Date());
+                        console.log("Adding memory...")
+                    }
                 }
 
-                //   When any other action is performed
-                // let interviewRes = interviewAgent(pet, action)
-                // let petResponse = pet.generateReaction(action)
+                console.log('PET', pet)
 
                 let res = await Promise.all([pet.generateReaction(action), interviewAgent(pet, action)])
                 let petResponse = res[0]

@@ -11,6 +11,10 @@
         <!-- Bunny's thought area -->
         <article class="pet-thought-section" v-if="!newPet">
             <h1>{{ petName?.toUpperCase() }}'s THOUGHTS</h1>
+            <button class="enable-memory-button" @click="changeMemory"> {{ memorySettings === "disabled" ? "ENABLE MEMORY" :
+                "DISABLE MEMORY" }}</button>
+            <br> <br>
+            <!-- <Button>Enable Memory</Button> -->
             <div class="thoughts-bubble-container" ref="thoughBubbleContainer">
                 <div v-for="(thought, i) in petThoughts">
                     <div class="pet-bubble" :class="{ last: i === petThoughts.length - 1 }">
@@ -30,6 +34,7 @@
 
 <script setup lang="ts">
 import { ActionResponseType } from '../../../server/types/types';
+import { ref } from 'vue';
 const props = defineProps<{
     newPet: boolean,
     petName: string,
@@ -42,6 +47,19 @@ function formatPetName(name: string) {
         return name.slice(0, 12) + "..."
     }
     return name
+}
+
+let memorySettings = ref<string | null>(localStorage.getItem("memory"))
+
+if (memorySettings.value === null) {
+    memorySettings.value = "disabled"
+    localStorage.setItem("memory", "disabled")
+}
+
+function changeMemory() {
+    let status = memorySettings.value === "disabled" ? "enabled" : "disabled"
+    memorySettings.value = status
+    localStorage.setItem("memory", status)
 }
 
 function parseThought(thought: string) {
@@ -74,9 +92,10 @@ function parseThought(thought: string) {
 
 .top-section article:nth-child(2) {
     border: solid 1.5px #ff9bbc;
-    height: 100%;
+    max-height: 292px;
     width: 250px;
     box-sizing: border-box;
+    overflow: auto;
     padding: 10px 20px;
 }
 

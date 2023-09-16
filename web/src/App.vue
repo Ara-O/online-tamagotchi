@@ -7,7 +7,7 @@
     </section>
     <section v-else>
       <section class="actions">
-        <Action :tabindex="i" v-for="(action, i) in actions" :class="{ disabled: !petIsAwake }"
+        <Action tabindex="0" v-for="(action) in actions" :class="{ disabled: !petIsAwake }"
           @click="performAction(action as ActionType)">{{ action }}
         </Action>
       </section>
@@ -15,7 +15,7 @@
         <form @submit.prevent="performAction('ACT')" class="action-input-section">
           <input type="text" name="input-field" class="action-input" v-model="actionText"
             :placeholder="`Example: I give ${petName?.toLowerCase() || 'Pet name'} a cake`">
-          <Action style="border: solid 1px hotpink" tabindex="5" :class="{ disabled: !petIsAwake }"
+          <Action style="border: solid 1px hotpink" tabindex="0" :class="{ disabled: !petIsAwake }"
             @click="performAction('ACT')">ACT
           </Action>
         </form>
@@ -57,7 +57,7 @@ function petCreated(name: string) {
 
 //When the pet is first created, or on re-visit
 async function startConversation() {
-  axios.post(`${import.meta.env.VITE_API_URL}/api/startConversation`, { id: localStorage.getItem("id") }).then((res) => {
+  axios.post(`${import.meta.env.VITE_API_URL}/api/startConversation`, { id: localStorage.getItem("id"), memory: localStorage.getItem("memory") || "disabled" }).then((res) => {
     if (res.status == 404) {
       localStorage.setItem("id", "")
       localStorage.setItem("pet", "")
@@ -94,7 +94,7 @@ async function performAction(action: ActionType) {
   }
 
 
-  axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, { id: localStorage.getItem("id"), action, actionText: actionText.value }).then((res) => {
+  axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, { id: localStorage.getItem("id"), action, actionText: actionText.value, memory: localStorage.getItem("memory") || "disabled" }).then((res) => {
     petThoughts.value.unshift(res.data)
     petReaction.value = res.data?.petResponse[1] || "Something is wrong with " + petName.value
   }).catch((err) => {
