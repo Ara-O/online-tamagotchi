@@ -80,7 +80,6 @@ export async function visitPet(id: string, name: string, age: number, action?: s
                     }
                 }
 
-                console.log('PET', pet)
 
                 let res = await Promise.all([pet.generateReaction(action), interviewAgent(pet, action)])
                 let petResponse = res[0]

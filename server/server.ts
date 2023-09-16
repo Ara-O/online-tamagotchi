@@ -4,6 +4,7 @@ import { visitPet } from "./modules/visitPet";
 import { requiresPetAuth } from "./auth/auth";
 import parseAction from "./modules/parseAction";
 import { default as createPetRoute } from "./routes/createPet";
+import { default as startConversationRoute } from "./routes/startConversation";
 
 const express = require('express');
 const cors = require("cors")
@@ -32,31 +33,7 @@ async function startServer() {
 
         app.post("/api/createPet", createPetRoute)
 
-        app.post("/api/startConversation", requiresPetAuth, async (req, res) => {
-            try {
-                const { id, pet } = req
-                const { memory } = req.body
-
-                //Check if the pet already has a personality
-                const doc = await db.collection("history")
-                const history = await doc.findOne({ "id": id })
-                const prompt = history === null ? "Your owner just created you" : "Your owner just visited you"
-
-                //If pet does not have personality, start a c
-                if (history === null) {
-                    await generatePetPersonality(id, pet?.name, pet?.age)
-                }
-
-                console.log(req.body.memory)
-                let response = await visitPet(id, pet?.name, pet?.age, prompt, memory)
-
-                console.log("PET RESPONSE - ", response, "\n")
-
-                return res.status(200).send(response)
-            } catch (err) {
-                res.status(500).send({ message: "There was an error", error: err })
-            }
-        })
+        app.post("/api/startConversation", requiresPetAuth, startConversationRoute)
 
         app.post("/api/performAction", requiresPetAuth, async (req, res) => {
             if (!req.body.action || req.body?.action.trim() === "") {

@@ -69,7 +69,7 @@ async function startConversation() {
     petReaction.value = res.data?.petResponse[1] || `Something is wrong with ${petName.value} 😟`
     petThoughts.value.unshift(res.data)
   }).catch((err) => {
-    alert(err)
+    alert(err?.response?.data?.message || err)
   })
 }
 
