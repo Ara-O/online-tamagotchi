@@ -49,7 +49,7 @@ export default async function (req, res) {
             name: sanitizedPetName,
             age: 0,
             traits: "You're a tamagotchi pet, you sometimes feel hungry, you sometimes feel the need to bath, you feel human emotions",
-            status: "You just got visited by your owner"
+            status: "You just got created as a pet by your owner"
         });
 
         let doc = await collection.insertOne({

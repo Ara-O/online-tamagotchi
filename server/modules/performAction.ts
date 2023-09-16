@@ -21,7 +21,7 @@ const interviewAgent = async (
     return response[1];
 };
 
-export async function visitPet(id: string, name: string, age: number, action?: string, actionText?: string, memoryEnabled?: "enabled" | "disabled"): Promise<ActionResponseType> {
+export async function performAction(id: string, name: string, age: number, action?: string, actionText?: string, memoryEnabled?: "enabled" | "disabled"): Promise<ActionResponseType> {
 
     try {
         const connection = getDatabaseConnection()

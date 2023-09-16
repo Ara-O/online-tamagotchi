@@ -1,6 +1,6 @@
 import { Collection, ObjectId } from "mongodb";
 import { generatePetPersonality } from "./modules/generatePet";
-import { visitPet } from "./modules/visitPet";
+import { performAction } from "./modules/performAction";
 import { requiresPetAuth } from "./auth/auth";
 import parseAction from "./modules/parseAction";
 import { default as createPetRoute } from "./routes/createPet";
@@ -29,8 +29,6 @@ async function startServer() {
     try {
         await startDatabase();
 
-        const db = getDatabaseConnection()
-
         app.post("/api/createPet", createPetRoute)
 
         app.post("/api/startConversation", requiresPetAuth, startConversationRoute)
@@ -55,7 +53,7 @@ async function startServer() {
 
                 console.log("ACTION:", action)
 
-                let response = await visitPet(id, pet?.name, pet?.age, action, req.body.actionText)
+                let response = await performAction(id, pet?.name, pet?.age, action, req.body.actionText)
 
                 console.log("RESPONSE: ", response, "\n")
 

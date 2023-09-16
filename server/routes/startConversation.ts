@@ -1,15 +1,13 @@
 import { getDatabaseConnection } from "../database"
 import { generatePetPersonality } from "../modules/generatePet"
-import { visitPet } from "../modules/visitPet"
+import { performAction } from "../modules/performAction"
 
 async function loadMemories(db, id) {
     try {
         //Check if the pet already has a personality
-        const doc = await db.collection("history")
 
-        const history = await doc.findOne({ "id": id })
-
-        const prompt = history === null ? "Your owner just created you" : "Your owner just visited you"
+    } catch (err) {
+        console.error(err)
     }
 }
 export default async function startConversation(req, res) {
@@ -19,20 +17,17 @@ export default async function startConversation(req, res) {
     try {
         const { id, pet } = req
         const { memory } = req.body
+        const doc = await db.collection("history")
+        const history = await doc.findOne({ "id": id })
+        const action = history === null ? "CREATE" : "VISIT"
 
-        //Check if the pet already has a personality
         if (req.body.memory === "enabled") {
-            await loadMemories
+            await loadMemories(db, id)
         }
 
-        // If memory is true, load all memories here, i dont think they are
-        //stored in the pet object itself
+        let response = await performAction(id, pet?.name, pet?.age, action, memory)
 
-        // let response = await visitPet(id, pet?.name, pet?.age, prompt, memory)
-
-        // console.log("PET RESPONSE - ", response, "\n")
-
-        // return res.status(200).send(response)
+        return res.status(200).send(response)
     } catch (err) {
         res.status(500).send({ message: "There was an error", error: err })
     }
