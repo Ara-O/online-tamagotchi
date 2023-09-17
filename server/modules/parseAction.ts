@@ -1,5 +1,10 @@
 export default function parseAction(action: string, actionText?: string) {
+    // visit, create
     switch (action) {
+        case "VISIT":
+            return "I just petted you, how do you feel about this";
+        case "CREATE":
+            return "I just petted you, how do you feel about this";
         case "PET":
             return "I just petted you, how do you feel about this";
         case "FEED":

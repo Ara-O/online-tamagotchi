@@ -2,9 +2,7 @@
 <template>
   <main>
     <PetVisuals :newPet="newPet" :petName="petName" :petThoughts="petThoughts" :petIsAwake="petIsAwake" />
-    <section v-if="newPet">
-      <CreatePetArea @petCreated="petCreated"></CreatePetArea>
-    </section>
+    <CreatePetArea v-if="newPet" @petCreated="petCreated"></CreatePetArea>
     <section v-else>
       <section class="actions">
         <Action tabindex="0" v-for="(action) in actions" :class="{ disabled: !petIsAwake }"
@@ -33,7 +31,7 @@
 import Action from './components/Action.vue';
 import axios from "axios"
 import { onMounted, ref } from 'vue';
-import { ActionResponseType } from "../../server/types/types.ts"
+import { ActionResponseType, ActionType } from "../../server/types/types.ts"
 import PetVisuals from './components/PetVisuals.vue';
 import CreatePetArea from './components/CreatePetArea.vue';
 
@@ -47,12 +45,10 @@ const actions = ref<string[]>(["PET", "FEED", "HUG", "BATH"])
 
 let petThoughts = ref<ActionResponseType[]>([])
 
-type ActionType = "PET" | "HUG" | "FEED" | "BATH" | "ACT"
-
 function petCreated(name: string) {
   newPet.value = false
   petName.value = name
-  startConversation()
+  performAction("CREATE")
 }
 
 //When the pet is first created, or on re-visit
@@ -70,6 +66,11 @@ async function startConversation() {
     petThoughts.value.unshift(res.data)
   }).catch((err) => {
     alert(err?.response?.data?.message || err)
+
+    if (err?.response?.data?.message === "Pet not found") {
+      localStorage.setItem("id", "")
+      localStorage.setItem("pet", "")
+    }
   })
 }
 
@@ -93,8 +94,14 @@ async function performAction(action: ActionType) {
       break
   }
 
+  let data = {
+    id: localStorage.getItem("id"),
+    action,
+    actionText: actionText.value,
+    memory: localStorage.getItem("memory") || "disabled"
+  }
 
-  axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, { id: localStorage.getItem("id"), action, actionText: actionText.value, memory: localStorage.getItem("memory") || "disabled" }).then((res) => {
+  axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, data).then((res) => {
     petThoughts.value.unshift(res.data)
     petReaction.value = res.data?.petResponse[1] || "Something is wrong with " + petName.value
   }).catch((err) => {

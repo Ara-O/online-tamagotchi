@@ -5,6 +5,7 @@ import { requiresPetAuth } from "./auth/auth";
 import parseAction from "./modules/parseAction";
 import { default as createPetRoute } from "./routes/createPet";
 import { default as startConversationRoute } from "./routes/startConversation";
+import { default as performActionRoute } from "./routes/performAction";
 
 const express = require('express');
 const cors = require("cors")
@@ -33,36 +34,7 @@ async function startServer() {
 
         app.post("/api/startConversation", requiresPetAuth, startConversationRoute)
 
-        app.post("/api/performAction", requiresPetAuth, async (req, res) => {
-            if (!req.body.action || req.body?.action.trim() === "") {
-                return res.status(400).send({ message: "There was an error performing this action" })
-            }
-
-            try {
-                //Gets the id and pet data from the auth
-                const { id, pet } = req
-
-                let action;
-
-                //Parse action texts, hug, feed etc
-                if (req.body.action === "ACT" && req.body.actionText) {
-                    action = parseAction(req.body.action, req.body.actionText)
-                } else {
-                    action = parseAction(req.body.action)
-                }
-
-                console.log("ACTION:", action)
-
-                let response = await performAction(id, pet?.name, pet?.age, action, req.body.actionText)
-
-                console.log("RESPONSE: ", response, "\n")
-
-                return res.status(200).send(response)
-            } catch (err) {
-                console.log('Error')
-                return res.status(404).send(err)
-            }
-        })
+        app.post("/api/performAction", requiresPetAuth, performActionRoute)
 
         app.get("/health", (req, res) => {
             return res.send("Helthi")

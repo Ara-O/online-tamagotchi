@@ -3,3 +3,5 @@ export type ActionResponseType = {
     petThought: string,
     petResponse: [boolean, string]
 }
+
+export type ActionType = "PET" | "HUG" | "FEED" | "BATH" | "ACT" | "CREATE" | "VISIT"

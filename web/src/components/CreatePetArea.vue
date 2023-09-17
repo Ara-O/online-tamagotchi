@@ -1,8 +1,10 @@
 <template>
-    <span class="new-pet-field">
-        <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
-            class="action-input pet-name-field">
-        <Button @click="createPet">CREATE</Button>
+    <span>
+        <form @submit.prevent="createPet" class="new-pet-field">
+            <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
+                class="action-input pet-name-field">
+            <Button type="submit" @click="createPet">CREATE</Button>
+        </form>
     </span>
     <h5 class="loading-message" v-if="creatingPet">{{ petName || "Your pet" }} is being created...</h5>
     <h5 v-if="error" class="error">There was an error creating
