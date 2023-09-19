@@ -51,29 +51,6 @@ function petCreated(name: string) {
   performAction("CREATE")
 }
 
-//When the pet is first created, or on re-visit
-async function startConversation() {
-  axios.post(`${import.meta.env.VITE_API_URL}/api/startConversation`, { id: localStorage.getItem("id"), memory: localStorage.getItem("memory") || "disabled" }).then((res) => {
-    if (res.status == 404) {
-      localStorage.setItem("id", "")
-      localStorage.setItem("pet", "")
-      newPet.value = true
-      throw "Your pet was lost to the void :0"
-    }
-
-    petIsAwake.value = true;
-    petReaction.value = res.data?.petResponse[1] || `Something is wrong with ${petName.value} 😟`
-    petThoughts.value.unshift(res.data)
-  }).catch((err) => {
-    alert(err?.response?.data?.message || err)
-
-    if (err?.response?.data?.message === "Pet not found") {
-      localStorage.setItem("id", "")
-      localStorage.setItem("pet", "")
-    }
-  })
-}
-
 async function performAction(action: ActionType) {
   switch (action) {
     case "FEED":
@@ -102,14 +79,25 @@ async function performAction(action: ActionType) {
   }
 
   axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, data).then((res) => {
+
+    if (action === "VISIT") {
+      petIsAwake.value = true
+    }
+
     petThoughts.value.unshift(res.data)
     petReaction.value = res.data?.petResponse[1] || "Something is wrong with " + petName.value
   }).catch((err) => {
     alert(err?.response?.data?.message || "There was an error interacting with  " + petName.value + ", please try again later :)")
+
+    if (err?.response?.status === 404) {
+      localStorage.setItem("pet", "")
+      localStorage.setItem("id", "")
+    }
+
     petReaction.value = `${petName.value} stares in silence`
+
   }).finally(() => {
     actionText.value = ""
-
   })
 }
 
@@ -124,6 +112,6 @@ onMounted(async () => {
 
   newPet.value = false
   petName.value = pet
-  startConversation()
+  performAction("VISIT")
 })
 </script>

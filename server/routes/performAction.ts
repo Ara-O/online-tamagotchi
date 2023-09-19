@@ -1,6 +1,7 @@
 import parseAction from "../modules/parseAction";
 import { performAction } from "../modules/performAction";
 import { ActionResponseType } from "../types/types";
+
 export default async function (req, res) {
     if (!req.body.action || req.body?.action.trim() === "") {
         return res.status(400).send({ message: "There was an error performing this action" })
@@ -14,6 +15,7 @@ export default async function (req, res) {
         let action = parseAction(req.body.action, req.body.actionText)
 
         console.log("ACTION:", action)
+        console.log("PET", req.body)
 
         // let response = await performAction(id, pet?.name, pet?.age, action, req.body.actionText)
         let response: ActionResponseType = {

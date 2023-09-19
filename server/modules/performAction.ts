@@ -72,13 +72,13 @@ export async function performAction(id: string, name: string, age: number, actio
                     status: "You just got visited by your owner"
                 });
 
-                if (memoryEnabled) {
-                    console.log("Memory Enabled: ")
-                    for (const memory of history.history) {
-                        await pet.addMemory(memory, new Date());
-                        console.log("Adding memory...")
-                    }
-                }
+                // if (memoryEnabled) {
+                //     console.log("Memory Enabled: ")
+                //     for (const memory of history.history) {
+                //         await pet.addMemory(memory, new Date());
+                //         console.log("Adding memory...")
+                //     }
+                // }
 
 
                 let res = await Promise.all([pet.generateReaction(action), interviewAgent(pet, action)])
