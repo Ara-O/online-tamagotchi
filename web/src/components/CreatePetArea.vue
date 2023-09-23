@@ -3,7 +3,7 @@
         <form @submit.prevent="createPet" class="new-pet-field">
             <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
                 class="action-input pet-name-field">
-            <Button type="submit" @click="createPet">CREATE</Button>
+            <Button type="submit">CREATE</Button>
         </form>
     </span>
     <h5 class="loading-message" v-if="creatingPet">{{ petName || "Your pet" }} is being created...</h5>
@@ -21,6 +21,7 @@ let error = ref<boolean>(false)
 let petName = ref<string>("")
 
 const emits = defineEmits(["petCreated"])
+
 async function createPet() {
     if (petName.value.trim() === "") {
         petName.value = "Bobby"

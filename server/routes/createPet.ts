@@ -20,6 +20,13 @@ export default async function (req, res) {
             created: Date.now(),
         })
 
+        let historyCollection: Collection = await db.collection("history")
+
+        historyCollection.insertOne({
+            history: [],
+            id: doc.insertedId
+        })
+
         res.status(200).send({ message: "Pet successfully created", id: doc.insertedId })
 
     } catch (err) {

@@ -80,18 +80,16 @@ async function performAction(action: ActionType) {
 
   axios.post(`${import.meta.env.VITE_API_URL}/api/performAction`, data).then((res) => {
 
-    if (action === "VISIT") {
-      petIsAwake.value = true
-    }
+    petIsAwake.value = true
 
     petThoughts.value.unshift(res.data)
     petReaction.value = res.data?.petResponse[1] || "Something is wrong with " + petName.value
   }).catch((err) => {
     alert(err?.response?.data?.message || "There was an error interacting with  " + petName.value + ", please try again later :)")
-
-    if (err?.response?.status === 404) {
+    if (err?.response?.status === 404 && err?.response?.data?.message === "Pet not found") {
       localStorage.setItem("pet", "")
       localStorage.setItem("id", "")
+      newPet.value = true
     }
 
     petReaction.value = `${petName.value} stares in silence`

@@ -17,7 +17,10 @@ export default async function (req, res) {
         console.log("ACTION:", action)
         console.log("PET", req.body)
 
-        // let response = await performAction(id, pet?.name, pet?.age, action, req.body.actionText)
+        //Perform the action to the pet
+        let response1 = await performAction(id, pet?.name, pet?.age, action, req.body.actionText, req.body?.memory || "disabled")
+
+        console.log("RES 1", response1)
         let response: ActionResponseType = {
             actionPrompt: action,
             petThought: "This is a test",
