@@ -1,10 +1,5 @@
-import { Collection, ObjectId } from "mongodb";
-import { generatePetPersonality } from "./modules/generatePet";
-import { performAction } from "./modules/performAction";
 import { requiresPetAuth } from "./auth/auth";
-import parseAction from "./modules/parseAction";
 import { default as createPetRoute } from "./routes/createPet";
-import { default as startConversationRoute } from "./routes/startConversation";
 import { default as performActionRoute } from "./routes/performAction";
 
 const express = require('express');
@@ -14,7 +9,6 @@ const app = express();
 const {
     startDatabase,
     closeDatabase,
-    getDatabaseConnection,
 } = require('./database');
 
 
@@ -31,8 +25,6 @@ async function startServer() {
         await startDatabase();
 
         app.post("/api/createPet", createPetRoute)
-
-        app.post("/api/startConversation", requiresPetAuth, startConversationRoute)
 
         app.post("/api/performAction", requiresPetAuth, performActionRoute)
 

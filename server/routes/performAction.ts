@@ -18,14 +18,15 @@ export default async function (req, res) {
         console.log("PET", req.body)
 
         //Perform the action to the pet
-        let response1 = await performAction(id, pet?.name, pet?.age, action, req.body.actionText, req.body?.memory || "disabled")
+        let response = await performAction(id, pet?.name, pet?.age, action, req.body.actionText, req.body?.memory || "disabled")
 
-        console.log("RES 1", response1)
-        let response: ActionResponseType = {
-            actionPrompt: action,
-            petThought: "This is a test",
-            petResponse: [false, "test"]
-        }
+        console.log("RESPONSE", response)
+
+        // let response: ActionResponseType = {
+        //     actionPrompt: action,
+        //     petThought: "This is a test",
+        //     petResponse: [false, "test"]
+        // }
         // console.log("RESPONSE: ", response, "\n")
 
         return res.status(200).send(response)

@@ -25,93 +25,81 @@ export async function performAction(id: string, name: string, age: number, actio
     try {
         const connection = getDatabaseConnection()
 
-        if (memoryEnabled === "enabled") {
-            const db: Collection = await connection.collection("history")
-            await db.updateOne({ id: new ObjectId(id) }, {
-                $push: {
-                    history: ` ${new Date(Date.now()).toLocaleString()} - ${action}`
-                }
-            })
-        } else {
-            console.log("Memory not enabled")
-        }
+        const API_KEY = process.env.OPENAI_API_KEY
 
-        return
-
-        // let history = await db.findOne({ id })
-
-        // // console.log(history)
-
-        // const API_KEY = process.env.OPENAI_API_KEY
-
-        // const llm = new OpenAI({
-        //     temperature: 0.9,
-        //     openAIApiKey: API_KEY,
-        //     maxTokens: 1500,
-        // });
+        const llm = new OpenAI({
+            temperature: 0.9,
+            openAIApiKey: API_KEY,
+            maxTokens: 1500,
+        });
 
         // //Generate trait and store in database
-        // const Simulation = async (): Promise<ActionResponseType> => {
-        //     try {
-        //         const createNewMemoryRetriever = async () => {
-        //             const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings());
-        //             const retriever = new TimeWeightedVectorStoreRetriever({
-        //                 vectorStore,
-        //                 otherScoreKeys: ["importance"],
-        //                 k: 15,
-        //             });
-        //             return retriever;
-        //         };
+        const Simulation = async (): Promise<ActionResponseType> => {
+            try {
+                const createNewMemoryRetriever = async () => {
+                    const vectorStore = new MemoryVectorStore(new OpenAIEmbeddings());
+                    const retriever = new TimeWeightedVectorStoreRetriever({
+                        vectorStore,
+                        otherScoreKeys: ["importance"],
+                        k: 15,
+                    });
+                    return retriever;
+                };
 
-        //         const petsMemory: GenerativeAgentMemory = new GenerativeAgentMemory(
-        //             llm,
-        //             await createNewMemoryRetriever(),
-        //             { reflectionThreshold: 8 }
-        //         );
+                const petsMemory: GenerativeAgentMemory = new GenerativeAgentMemory(
+                    llm,
+                    await createNewMemoryRetriever(),
+                    { reflectionThreshold: 8 }
+                );
 
-        //         const pet: GenerativeAgent = new GenerativeAgent(llm, petsMemory, {
-        //             name,
-        //             age,
-        //             traits: "You're a tamagotchi pet, you sometimes feel hungry, you sometimes feel the need to bath, you feel human emotions",
-        //             status: "You just got visited by your owner"
-        //         });
+                const pet: GenerativeAgent = new GenerativeAgent(llm, petsMemory, {
+                    name,
+                    age,
+                    traits: "You're a tamagotchi pet, you sometimes feel hungry, you sometimes feel the need to bath, you feel human emotions",
+                    status: "You just got visited by your owner"
+                });
 
-        //         // if (memoryEnabled) {
-        //         //     console.log("Memory Enabled: ")
-        //         //     for (const memory of history.history) {
-        //         //         await pet.addMemory(memory, new Date());
-        //         //         console.log("Adding memory...")
-        //         //     }
-        //         // }
+                const db: Collection = await connection.collection("history")
+
+                if (memoryEnabled === "enabled") {
+                    await db.updateOne({ id: new ObjectId(id) }, {
+                        $push: {
+                            history: ` ${new Date(Date.now()).toLocaleString()} - ${action}`
+                        }
+                    })
+
+                    let history = await db.findOne({ id: new ObjectId(id) })
+
+                    console.log("Memory Enabled: ")
+
+                    for (const memory of history.history) {
+                        await pet.addMemory(memory, new Date());
+                        console.log("Adding memory...")
+                    }
+                }
 
 
-        //         let res = await Promise.all([pet.generateReaction(action), interviewAgent(pet, action)])
-        //         let petResponse = res[0]
-        //         let interviewRes = res[1]
+                let res = await Promise.all([pet.generateReaction(action), interviewAgent(pet, action)])
+                let petResponse = res[0]
+                let interviewRes = res[1]
 
-        //         const response: ActionResponseType = {
-        //             actionPrompt: action,
-        //             petThought: interviewRes,
-        //             petResponse: petResponse
-        //         }
+                const response: ActionResponseType = {
+                    actionPrompt: action,
+                    petThought: interviewRes,
+                    petResponse: petResponse
+                }
 
-        //         // const response: ActionResponseType = {
-        //         //     actionPrompt: action,
-        //         //     petThought: "This is a test",
-        //         //     petResponse: [false, "test"]
-        //         // }
+                return response
 
-        //         return response
+            } catch (err) {
+                console.error(err)
+                throw new Error(err)
+            }
+        }
 
-        //     } catch (err) {
-        //         console.error(err)
-        //         throw new Error(err)
-        //     }
-        // }
+        let petResponse: ActionResponseType = await Simulation();
 
-        // let petResponse: ActionResponseType = await Simulation();
-
-        // return petResponse as ActionResponseType
+        return petResponse as ActionResponseType
     } catch (err) {
         console.log(err)
         throw new Error(err)
