@@ -1,51 +1,52 @@
 <template>
-    <span>
-        <form @submit.prevent="createPet" class="new-pet-field">
-            <input type="text" name="pet-name" placeholder="ENTER PET NAME" v-model="petName"
-                class="action-input pet-name-field">
-            <Button type="submit">CREATE</Button>
-        </form>
-    </span>
-    <h5 class="loading-message" v-if="creatingPet">{{ petName || "Your pet" }} is being created...</h5>
-    <h5 v-if="error" class="error">There was an error creating
-        your pet. Please try again later</h5>
+  <span>
+    <form @submit.prevent="createPet" class="new-pet-field">
+      <input
+        type="text"
+        name="pet-name"
+        placeholder="ENTER PET NAME"
+        v-model="petName"
+        class="action-input pet-name-field"
+        required
+      />
+      <input
+        type="text"
+        name="pet-personality"
+        placeholder="ENTER PET PERSONALITY"
+        v-model="petPersonality"
+        class="action-input pet-name-field"
+        required
+      />
+      <Button type="submit">CREATE</Button>
+    </form>
+  </span>
+  <h5 class="loading-message" v-if="creatingPet">
+    {{ petName || "Your pet" }} is being created...
+  </h5>
+  <h5 v-if="error" class="error">
+    There was an error creating your pet. Please try again later
+  </h5>
 </template>
 
 <script lang="ts" setup>
-import axios from 'axios';
-import { ref } from 'vue';
-import Button from "./Button.vue"
+import { ref } from "vue";
+import Button from "./Button.vue";
 
-let creatingPet = ref<boolean>(false)
-let error = ref<boolean>(false)
-let petName = ref<string>("")
+let creatingPet = ref<boolean>(false);
+let error = ref<boolean>(false);
+const petName = ref<string>("");
+const petPersonality = ref<string>("");
 
-const emits = defineEmits(["petCreated"])
+const emits = defineEmits(["petCreated"]);
 
 async function createPet() {
-    if (petName.value.trim() === "") {
-        petName.value = "Bobby"
-    }
+  if (petName.value.trim() === "") {
+    petName.value = "Bobby";
+  }
 
-    error.value = false
-    creatingPet.value = true
+  error.value = false;
+  creatingPet.value = true;
 
-    try {
-        let res = await axios.post(`${import.meta.env.VITE_API_URL}/api/createPet`, {
-            petName: petName.value
-        })
-
-        if (res.data.id) {
-            localStorage.setItem("id", res.data.id)
-            localStorage.setItem("pet", petName.value)
-            emits("petCreated", petName.value)
-        } else {
-            throw new Error("No ID found")
-        }
-    } catch {
-        error.value = true
-    } finally {
-        creatingPet.value = false
-    }
+  emits("petCreated", petName.value, petPersonality.value);
 }
 </script>
